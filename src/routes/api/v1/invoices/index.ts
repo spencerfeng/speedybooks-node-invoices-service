@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 
 const router = express.Router()
 
-router.post('/:company/invoices', async (req: Request, res: Response) => {
+router.post('/companies/:company/invoices', async (req: Request, res: Response) => {
   res.status(201).send()
 })
 
