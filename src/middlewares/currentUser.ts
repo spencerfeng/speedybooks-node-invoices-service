@@ -1,9 +1,16 @@
 import jwt from 'jsonwebtoken'
 import { Request, Response, NextFunction } from 'express'
 
+interface UserPayloadInJwt {
+  id: string
+  email: string
+  companies: string
+}
+
 interface UserPayload {
   id: string
   email: string
+  companies: string[]
 }
 
 declare global {
@@ -20,7 +27,12 @@ export const currentUser = (req: Request, res: Response, next: NextFunction) => 
   }
 
   try {
-    const payload = jwt.verify(req.cookies.jwt, process.env.JWT_KEY!) as UserPayload
+    const payloadFromJwt = jwt.verify(req.cookies.jwt, process.env.JWT_KEY!) as UserPayloadInJwt
+    const payload: UserPayload = {
+      ...payloadFromJwt,
+      companies: payloadFromJwt.companies.split(',')
+    }
+
     req.currentUser = payload
   } catch (err) {}
 
