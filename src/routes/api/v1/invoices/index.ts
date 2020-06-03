@@ -2,10 +2,11 @@ import express, { Request, Response } from 'express'
 
 import { currentUser } from '../../../../middlewares/currentUser'
 import { requireAuth } from '../../../../middlewares/requireAuth'
+import { ownCompany } from '../../../../middlewares/ownCompany'
 
 const router = express.Router()
 
-router.post('/companies/:company/invoices', currentUser, requireAuth, async (req: Request, res: Response) => {
+router.post('/invoices', currentUser, requireAuth, ownCompany, async (req: Request, res: Response) => {
   res.status(201).send()
 })
 

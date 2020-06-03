@@ -4,16 +4,14 @@ import request from 'supertest'
 import { app } from '../../../../../src/app'
 
 describe('invoices routes', () => {
-  it('should have a route handler listening to /api/v1/companies/:company/invoices for post requests', async () => {
-    const companyUuid = '047e9001-0001-5d14-4124-b165ce840ad2'
-    const response = await request(app).post(`/api/v1/companies/${companyUuid}/invoices`).send({})
+  it('should have a route handler listening to /api/v1/invoices for post requests', async () => {
+    const response = await request(app).post(`/api/v1/invoices`).send({})
 
     expect(response.status).not.toEqual(404)
   })
 
   it('can not access the route to create an invoice if the user is not signed in', async () => {
-    const companyUuid = '047e9001-0001-5d14-4124-b165ce840ad2'
-    await request(app).post(`/api/v1/companies/${companyUuid}/invoices`).send({}).expect(401)
+    await request(app).post(`/api/v1/invoices`).send({}).expect(401)
   })
 
   it('can not access the route to create an invoice if the user does not own this company', async () => {
@@ -26,9 +24,11 @@ describe('invoices routes', () => {
 
     const companyUuid = '047e9001-0001-5d14-4124-b165ce840ad2'
     await request(app)
-      .post(`/api/v1/companies/${companyUuid}/invoices`)
+      .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${jwtToken}`])
-      .send({})
+      .send({
+        company: companyUuid
+      })
       .expect(401)
   })
 
@@ -42,9 +42,11 @@ describe('invoices routes', () => {
 
     const companyUuid = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
-      .post(`/api/v1/companies/${companyUuid}/invoices`)
+      .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${jwtToken}`])
-      .send({})
+      .send({
+        company: companyUuid
+      })
       .expect(201)
   })
 })
