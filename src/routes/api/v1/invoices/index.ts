@@ -18,6 +18,12 @@ router.post(
       isUUID: {
         errorMessage: 'Client ID should be in the correct format'
       }
+    },
+    issueDate: {
+      in: ['body'],
+      exists: {
+        errorMessage: 'Date of issue is required'
+      }
     }
   }),
   async (req: Request, res: Response) => {

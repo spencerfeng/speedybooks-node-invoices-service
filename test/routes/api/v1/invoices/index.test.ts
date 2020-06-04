@@ -32,26 +32,6 @@ describe('invoices routes', () => {
       .expect(401)
   })
 
-  it('can access the route to create an invoice if the user is signed in and the user owns the company', async () => {
-    const payload = {
-      id: '089f9u01-u091-ud17-6176-c2f6t784067y',
-      email: 'test@email.com',
-      companies: '057e9002-0001-5d15-6136-c266ce580ad1, 097e7112-8881-5d15-6136-r586ty580bg3'
-    }
-    const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
-
-    const companyUuid = '057e9002-0001-5d15-6136-c266ce580ad1'
-    const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
-    await request(app)
-      .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${jwtToken}`])
-      .send({
-        company: companyUuid,
-        clientId
-      })
-      .expect(201)
-  })
-
   it('should return an error if clientId in the request body is not a correct UUID when creating an invoice', async () => {
     const payload = {
       id: '089f9u01-u091-ud17-6176-c2f6t784067y',
@@ -60,12 +40,34 @@ describe('invoices routes', () => {
     }
     const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
 
+    const issueDate = '09/12/2011'
     const companyUuid = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
       .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${jwtToken}`])
       .send({
-        company: companyUuid
+        company: companyUuid,
+        issueDate
+      })
+      .expect(400)
+  })
+
+  it('should return an error if issueDate is not provided in the request body when creating an invoice', async () => {
+    const payload = {
+      id: '089f9u01-u091-ud17-6176-c2f6t784067y',
+      email: 'test@email.com',
+      companies: '057e9002-0001-5d15-6136-c266ce580ad1, 097e7112-8881-5d15-6136-r586ty580bg3'
+    }
+    const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
+
+    const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
+    const companyUuid = '057e9002-0001-5d15-6136-c266ce580ad1'
+    await request(app)
+      .post(`/api/v1/invoices`)
+      .set('Cookie', [`jwt=${jwtToken}`])
+      .send({
+        company: companyUuid,
+        clientId
       })
       .expect(400)
   })
