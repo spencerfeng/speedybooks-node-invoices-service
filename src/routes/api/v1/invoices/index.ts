@@ -24,6 +24,12 @@ router.post(
       exists: {
         errorMessage: 'Date of issue is required'
       }
+    },
+    dueDate: {
+      in: ['body'],
+      exists: {
+        errorMessage: 'Due date is required'
+      }
     }
   }),
   async (req: Request, res: Response) => {
