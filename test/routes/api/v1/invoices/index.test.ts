@@ -22,12 +22,12 @@ describe('invoices routes', () => {
     }
     const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
 
-    const companyUuid = '047e9001-0001-5d14-4124-b165ce840ad2'
+    const companyId = '047e9001-0001-5d14-4124-b165ce840ad2'
     await request(app)
       .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${jwtToken}`])
       .send({
-        company: companyUuid
+        companyId
       })
       .expect(401)
   })
@@ -42,12 +42,12 @@ describe('invoices routes', () => {
 
     const issueDate = '09/12/2011'
     const dueDate = '16/12/2011'
-    const companyUuid = '057e9002-0001-5d15-6136-c266ce580ad1'
+    const companyId = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
       .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${jwtToken}`])
       .send({
-        company: companyUuid,
+        companyId,
         issueDate,
         dueDate
       })
@@ -64,12 +64,12 @@ describe('invoices routes', () => {
 
     const dueDate = '09/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
-    const companyUuid = '057e9002-0001-5d15-6136-c266ce580ad1'
+    const companyId = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
       .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${jwtToken}`])
       .send({
-        company: companyUuid,
+        companyId,
         clientId,
         dueDate
       })
@@ -86,12 +86,12 @@ describe('invoices routes', () => {
 
     const issueDate = '09/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
-    const companyUuid = '057e9002-0001-5d15-6136-c266ce580ad1'
+    const companyId = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
       .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${jwtToken}`])
       .send({
-        company: companyUuid,
+        companyId,
         clientId,
         issueDate
       })
