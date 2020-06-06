@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node-dev src/index.ts",
-    "test": "jest --watchAll --no-cache"
+    "start": "NODE_ENV=development ts-node-dev src/index.ts",
+    "test": "NODE_ENV=test jest --watchAll --no-cache"
   },
   "keywords": [],
   "author": "",

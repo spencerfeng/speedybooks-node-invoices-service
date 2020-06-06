@@ -1,0 +1,13 @@
+[
+  {
+    "name": "development",
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "password",
+    "database": "speedyBooks",
+    "synchronize": true,
+    "entities": ["src/entities/*.ts"]
+  }
+]
