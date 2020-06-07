@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import request from 'supertest'
-import { createConnection, Connection, getConnection, getRepository, Repository } from 'typeorm'
+import { createConnection, Connection, getConnection, Repository } from 'typeorm'
 
 import { app } from '../../../../../src/app'
 import { Invoice } from '../../../../../src/entities/Invoice'
