@@ -96,7 +96,6 @@ describe('invoices routes', () => {
       })
       .expect(201)
 
-    const invoiceRepository = getConnection(process.env.NODE_ENV).getRepository(Invoice)
     const invoice = await invoiceRepository.findOne({
       companyId: myCompany1,
       clientId
