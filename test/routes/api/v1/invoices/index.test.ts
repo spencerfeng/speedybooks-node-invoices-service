@@ -1,9 +1,9 @@
-import jwt from 'jsonwebtoken'
 import request from 'supertest'
 import { createConnection, Connection, getConnection, Repository } from 'typeorm'
 
 import { app } from '../../../../../src/app'
 import { Invoice } from '../../../../../src/entities/Invoice'
+import { myCompany1, myCompany2, signInWithCompanies } from '../../../../helpers'
 
 describe('invoices routes', () => {
   let connection: Connection
@@ -29,39 +29,24 @@ describe('invoices routes', () => {
   })
 
   it('can not access the route to create an invoice if the user does not own this company', async () => {
-    const payload = {
-      id: '089f9u01-u091-ud17-6176-c2f6t784067y',
-      email: 'test@email.com',
-      companies: '057e9002-0001-5d15-6136-c266ce580ad1, 097e7112-8881-5d15-6136-r586ty580bg3'
-    }
-    const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
-
-    const companyId = '047e9001-0001-5d14-4124-b165ce840ad2'
+    const someoneElsesCompany = '90711ec0-abf2-4f37-a9ea-d007c048e64b'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${jwtToken}`])
+      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
-        companyId
+        companyId: someoneElsesCompany
       })
       .expect(401)
   })
 
   it('should return an error if clientId in the request body is not a correct UUID when creating an invoice', async () => {
-    const payload = {
-      id: '089f9u01-u091-ud17-6176-c2f6t784067y',
-      email: 'test@email.com',
-      companies: '057e9002-0001-5d15-6136-c266ce580ad1, 097e7112-8881-5d15-6136-r586ty580bg3'
-    }
-    const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
-
     const issueDate = '09/12/2011'
     const dueDate = '16/12/2011'
-    const companyId = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${jwtToken}`])
+      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
-        companyId,
+        companyId: myCompany1,
         issueDate,
         dueDate
       })
@@ -69,21 +54,13 @@ describe('invoices routes', () => {
   })
 
   it('should return an error if issueDate is not provided in the request body when creating an invoice', async () => {
-    const payload = {
-      id: '089f9u01-u091-ud17-6176-c2f6t784067y',
-      email: 'test@email.com',
-      companies: '057e9002-0001-5d15-6136-c266ce580ad1, 097e7112-8881-5d15-6136-r586ty580bg3'
-    }
-    const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
-
     const dueDate = '09/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
-    const companyId = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${jwtToken}`])
+      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
-        companyId,
+        companyId: myCompany1,
         clientId,
         dueDate
       })
@@ -91,21 +68,13 @@ describe('invoices routes', () => {
   })
 
   it('should return an error if dueDate is not provided in the request body when creating an invoice', async () => {
-    const payload = {
-      id: '089f9u01-u091-ud17-6176-c2f6t784067y',
-      email: 'test@email.com',
-      companies: '057e9002-0001-5d15-6136-c266ce580ad1, 097e7112-8881-5d15-6136-r586ty580bg3'
-    }
-    const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
-
     const issueDate = '09/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
-    const companyId = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${jwtToken}`])
+      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
-        companyId,
+        companyId: myCompany1,
         clientId,
         issueDate
       })
@@ -113,22 +82,14 @@ describe('invoices routes', () => {
   })
 
   it('should create an invoice and persist the data in the database when the user signs in and owns the company and provided correct date of issue, due date and clientId', async () => {
-    const payload = {
-      id: '089f9u01-u091-ud17-6176-c2f6t784067y',
-      email: 'test@email.com',
-      companies: '057e9002-0001-5d15-6136-c266ce580ad1, 097e7112-8881-5d15-6136-r586ty580bg3'
-    }
-    const jwtToken = jwt.sign(payload, process.env.JWT_KEY!)
-
     const issueDate = '09/12/2019'
     const dueDate = '16/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
-    const companyId = '057e9002-0001-5d15-6136-c266ce580ad1'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${jwtToken}`])
+      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
-        companyId,
+        companyId: myCompany1,
         clientId,
         issueDate,
         dueDate
@@ -137,10 +98,10 @@ describe('invoices routes', () => {
 
     const invoiceRepository = getConnection(process.env.NODE_ENV).getRepository(Invoice)
     const invoice = await invoiceRepository.findOne({
-      companyId,
+      companyId: myCompany1,
       clientId
     })
-    expect(invoice!.companyId).toBe(companyId)
+    expect(invoice!.companyId).toBe(myCompany1)
     expect(invoice!.clientId).toBe(clientId)
     expect(invoice!.id).not.toBe(null)
   })
