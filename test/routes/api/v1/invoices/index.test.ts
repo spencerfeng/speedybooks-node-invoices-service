@@ -4,14 +4,22 @@ import { createConnection, Connection, getConnection, Repository } from 'typeorm
 import { app } from '../../../../../src/app'
 import { Invoice } from '../../../../../src/entities/Invoice'
 import { myCompany1, myCompany2, signInWithCompanies } from '../../../../helpers'
+import { InvoiceItem } from '../../../../../src/entities/InvoiceItem'
 
 describe('invoices routes', () => {
   let connection: Connection
   let invoiceRepository: Repository<Invoice>
+  let invoiceItemRepository: Repository<InvoiceItem>
 
   beforeAll(async () => {
     connection = await createConnection(process.env.NODE_ENV!)
     invoiceRepository = connection.getRepository(Invoice)
+    invoiceItemRepository = connection.getRepository(InvoiceItem)
+  })
+
+  beforeEach(async () => {
+    await invoiceRepository.query('DELETE FROM invoice')
+    await invoiceItemRepository.query('DELETE FROM invoice_item')
   })
 
   afterAll(async () => {
@@ -103,5 +111,45 @@ describe('invoices routes', () => {
     expect(invoice!.companyId).toBe(myCompany1)
     expect(invoice!.clientId).toBe(clientId)
     expect(invoice!.id).not.toBe(null)
+  })
+
+  it('should be able to create invoice items when an invoice is created', async () => {
+    const issueDate = '09/12/2019'
+    const dueDate = '16/12/2019'
+    const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
+    const taxId = 'edd4f62c-a94f-4526-afcf-b109ddd5b558'
+    await request(app)
+      .post(`/api/v1/invoices`)
+      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
+      .send({
+        companyId: myCompany1,
+        clientId,
+        issueDate,
+        dueDate,
+        invoiceItems: [
+          {
+            name: 'Invoice Item 1',
+            description: 'Invoice item 1 description',
+            quantity: 1,
+            rate: 3000,
+            taxId
+          },
+          {
+            name: 'Invoice Item 2',
+            description: 'Invoice item 2 description',
+            quantity: 2,
+            rate: 1000,
+            taxId
+          }
+        ]
+      })
+      .expect(201)
+
+    const invoice = await invoiceRepository
+      .createQueryBuilder('invoice')
+      .leftJoinAndSelect('invoice.invoiceItems', 'invoiceItem')
+      .where('invoice.companyId = :companyId', { companyId: myCompany1 })
+      .getOne()
+    expect(invoice!.invoiceItems).toHaveLength(2)
   })
 })

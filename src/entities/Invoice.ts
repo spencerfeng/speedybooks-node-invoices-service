@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm'
+
+import { InvoiceItem } from './InvoiceItem'
 
 @Entity()
 export class Invoice {
@@ -16,6 +18,9 @@ export class Invoice {
 
   @Column()
   companyId!: string
+
+  @OneToMany((type) => InvoiceItem, (invoiceItem) => invoiceItem.invoice)
+  invoiceItems!: InvoiceItem[]
 
   @CreateDateColumn()
   createdAt!: string
