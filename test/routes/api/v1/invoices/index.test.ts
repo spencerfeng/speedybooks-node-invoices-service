@@ -1,29 +1,33 @@
 import request from 'supertest'
-import { createConnection, Connection, getConnection, Repository } from 'typeorm'
+import { createConnection, Connection, Repository } from 'typeorm'
 
 import { app } from '../../../../../src/app'
+import { TestUtils } from '../../../../TestUtils'
 import { Invoice } from '../../../../../src/entities/Invoice'
-import { myCompany1, myCompany2, signInWithCompanies } from '../../../../helpers'
 import { InvoiceItem } from '../../../../../src/entities/InvoiceItem'
 
 describe('invoices routes', () => {
+  const myCompany1 = '2fca32b6-a177-4bcd-9855-8df929718ac8'
+  const myCompany2 = 'c319ba51-adf1-4c34-bdc3-ba73ac92d541'
+
   let connection: Connection
+  let testUtils: TestUtils
   let invoiceRepository: Repository<Invoice>
   let invoiceItemRepository: Repository<InvoiceItem>
 
   beforeAll(async () => {
     connection = await createConnection(process.env.NODE_ENV!)
+    testUtils = new TestUtils(connection)
     invoiceRepository = connection.getRepository(Invoice)
     invoiceItemRepository = connection.getRepository(InvoiceItem)
   })
 
   beforeEach(async () => {
-    await invoiceRepository.query('DELETE FROM invoice')
-    await invoiceItemRepository.query('DELETE FROM invoice_item')
+    await testUtils.clearDb()
   })
 
   afterAll(async () => {
-    connection.close()
+    await testUtils.closeConnection()
   })
 
   it('should have a route handler listening to /api/v1/invoices for post requests', async () => {
@@ -40,7 +44,7 @@ describe('invoices routes', () => {
     const someoneElsesCompany = '90711ec0-abf2-4f37-a9ea-d007c048e64b'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
         companyId: someoneElsesCompany
       })
@@ -52,7 +56,7 @@ describe('invoices routes', () => {
     const dueDate = '16/12/2011'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
         companyId: myCompany1,
         issueDate,
@@ -66,7 +70,7 @@ describe('invoices routes', () => {
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
         companyId: myCompany1,
         clientId,
@@ -80,7 +84,7 @@ describe('invoices routes', () => {
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
         companyId: myCompany1,
         clientId,
@@ -95,7 +99,7 @@ describe('invoices routes', () => {
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
         companyId: myCompany1,
         clientId,
@@ -120,7 +124,7 @@ describe('invoices routes', () => {
     const taxId = 'edd4f62c-a94f-4526-afcf-b109ddd5b558'
     await request(app)
       .post(`/api/v1/invoices`)
-      .set('Cookie', [`jwt=${signInWithCompanies([myCompany1, myCompany2])}`])
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
         companyId: myCompany1,
         clientId,
