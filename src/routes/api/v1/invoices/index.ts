@@ -3,10 +3,11 @@ import express, { Request, Response } from 'express'
 import { checkSchema, validationResult } from 'express-validator'
 
 import { Invoice } from '../../../../entities/Invoice'
+import { InvoiceItem } from '../../../../entities/InvoiceItem'
 import { ownCompany } from '../../../../middlewares/ownCompany'
 import { currentUser } from '../../../../middlewares/currentUser'
 import { requireAuth } from '../../../../middlewares/requireAuth'
-import { InvoiceItem } from '../../../../entities/InvoiceItem'
+import { RequestValidationError } from '../../../../errors/RequestValidationError'
 
 const router = express.Router()
 
@@ -38,7 +39,7 @@ router.post(
   async (req: Request, res: Response) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).send()
+      throw new RequestValidationError(errors.array())
     }
 
     const invoiceRepository = getConnection(process.env.NODE_ENV).getRepository(Invoice)
