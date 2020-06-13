@@ -1,7 +1,9 @@
+import moment from 'moment'
 import { getConnection } from 'typeorm'
 import express, { Request, Response } from 'express'
-import { checkSchema, validationResult } from 'express-validator'
+import { validationResult, check } from 'express-validator'
 
+import { DATE_FORMAT } from '../../../../constants'
 import { Invoice } from '../../../../entities/Invoice'
 import { InvoiceItem } from '../../../../entities/InvoiceItem'
 import { ownCompany } from '../../../../middlewares/ownCompany'
@@ -16,26 +18,11 @@ router.post(
   currentUser,
   requireAuth,
   ownCompany,
-  checkSchema({
-    clientId: {
-      in: ['body'],
-      isUUID: {
-        errorMessage: 'Client ID should be in the correct format'
-      }
-    },
-    issueDate: {
-      in: ['body'],
-      exists: {
-        errorMessage: 'Date of issue is required'
-      }
-    },
-    dueDate: {
-      in: ['body'],
-      exists: {
-        errorMessage: 'Due date is required'
-      }
-    }
-  }),
+  [
+    check('clientId').exists().withMessage('Client ID is required').bail().isUUID().withMessage('Client ID should be in the correct format'),
+    check('issueDate').exists().withMessage('Date of issue is required'),
+    check('dueDate').exists().withMessage('Due date is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Due date is not in the correct format')
+  ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
