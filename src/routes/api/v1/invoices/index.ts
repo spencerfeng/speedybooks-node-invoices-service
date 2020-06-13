@@ -20,7 +20,7 @@ router.post(
   ownCompany,
   [
     check('clientId').exists().withMessage('Client ID is required').bail().isUUID().withMessage('Client ID should be in the correct format'),
-    check('issueDate').exists().withMessage('Date of issue is required'),
+    check('issueDate').exists().withMessage('Date of issue is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Date of issue is not in the correct format'),
     check('dueDate').exists().withMessage('Due date is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Due date is not in the correct format')
   ],
   async (req: Request, res: Response) => {

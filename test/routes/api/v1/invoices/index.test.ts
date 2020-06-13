@@ -79,6 +79,31 @@ describe('invoices routes', () => {
       .expect(400)
   })
 
+  it('should return an error if issueDate is not in DD/MM/YYYY format when creating an invoice', async () => {
+    const issueDate = 'sdfsdfs'
+    const dueDate = '09/12/2019'
+    const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
+    const response = await request(app)
+      .post(`/api/v1/invoices`)
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
+      .send({
+        companyId: myCompany1,
+        clientId,
+        dueDate,
+        issueDate
+      })
+      .expect(400)
+
+    expect(response.body).toEqual({
+      errors: [
+        {
+          message: 'Date of issue is not in the correct format',
+          field: 'issueDate'
+        }
+      ]
+    })
+  })
+
   it('should return an error if dueDate is not provided in the request body when creating an invoice', async () => {
     const issueDate = '09/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
