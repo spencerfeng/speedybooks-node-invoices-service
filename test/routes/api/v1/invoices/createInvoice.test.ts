@@ -6,7 +6,7 @@ import { TestUtils } from '../../../../TestUtils'
 import { Invoice } from '../../../../../src/entities/Invoice'
 import { InvoiceItem } from '../../../../../src/entities/InvoiceItem'
 
-describe('invoices routes', () => {
+describe('Create invoice: POST /api/v1/invoice', () => {
   const myCompany1 = '2fca32b6-a177-4bcd-9855-8df929718ac8'
   const myCompany2 = 'c319ba51-adf1-4c34-bdc3-ba73ac92d541'
 
