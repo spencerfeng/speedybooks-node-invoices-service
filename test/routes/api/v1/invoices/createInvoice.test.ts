@@ -51,6 +51,97 @@ describe('Create invoice: POST /api/v1/invoice', () => {
       .expect(401)
   })
 
+  it('should return an error if invoiceNo is not provided in the request body when creating an invoice', async () => {
+    const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
+    const issueDate = '09/12/2011'
+    const dueDate = '16/12/2011'
+    const response = await request(app)
+      .post(`/api/v1/invoices`)
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
+      .send({
+        companyId: myCompany1,
+        issueDate,
+        dueDate,
+        clientId
+      })
+      .expect(400)
+
+    expect(response.body).toEqual({
+      errors: [
+        {
+          message: 'Invoice No is required',
+          field: 'invoiceNo'
+        }
+      ]
+    })
+  })
+
+  it('should return an error if invoiceNo is empty in the request body when creating an invoice', async () => {
+    const invoiceNo = ''
+    const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
+    const issueDate = '09/12/2011'
+    const dueDate = '16/12/2011'
+    const response = await request(app)
+      .post(`/api/v1/invoices`)
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
+      .send({
+        companyId: myCompany1,
+        issueDate,
+        dueDate,
+        clientId,
+        invoiceNo
+      })
+      .expect(400)
+
+    expect(response.body).toEqual({
+      errors: [
+        {
+          message: 'Invoice No is required',
+          field: 'invoiceNo'
+        }
+      ]
+    })
+  })
+
+  it('should return an error if the invoiceNo provided already exists for this company', async () => {
+    const invoiceNo = '123'
+    const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
+    const issueDate = '09/12/2011'
+    const dueDate = '16/12/2011'
+
+    // create an invoice
+    const invoice1 = new Invoice()
+    invoice1.invoiceNo = invoiceNo
+    invoice1.clientId = clientId
+    invoice1.issueDate = issueDate
+    invoice1.dueDate = dueDate
+    invoice1.companyId = myCompany1
+    await invoiceRepository.save(invoice1)
+
+    // create another invoice with the same invoice number
+    const response = await request(app)
+      .post(`/api/v1/invoices`)
+      .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
+      .send({
+        companyId: myCompany1,
+        issueDate,
+        dueDate,
+        clientId,
+        invoiceNo
+      })
+      .expect(400)
+
+    expect(response.body).toEqual({
+      errors: [
+        {
+          message: 'This invoice No already exsits',
+          field: 'invoiceNo'
+        }
+      ]
+    })
+
+  })
+
   it('should return an error if clientId in the request body is not a correct UUID when creating an invoice', async () => {
     const issueDate = '09/12/2011'
     const dueDate = '16/12/2011'
@@ -80,6 +171,7 @@ describe('Create invoice: POST /api/v1/invoice', () => {
   })
 
   it('should return an error if issueDate is not in DD/MM/YYYY format when creating an invoice', async () => {
+    const invoiceNo = '132'
     const issueDate = 'sdfsdfs'
     const dueDate = '09/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
@@ -90,7 +182,8 @@ describe('Create invoice: POST /api/v1/invoice', () => {
         companyId: myCompany1,
         clientId,
         dueDate,
-        issueDate
+        issueDate,
+        invoiceNo
       })
       .expect(400)
 
@@ -105,6 +198,7 @@ describe('Create invoice: POST /api/v1/invoice', () => {
   })
 
   it('should return an error if dueDate is not provided in the request body when creating an invoice', async () => {
+    const invoiceNo = '132'
     const issueDate = '09/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
     await request(app)
@@ -113,12 +207,14 @@ describe('Create invoice: POST /api/v1/invoice', () => {
       .send({
         companyId: myCompany1,
         clientId,
-        issueDate
+        issueDate,
+        invoiceNo
       })
       .expect(400)
   })
 
   it('should return an error if dueDate is not in DD/MM/YYYY format when creating an invoice', async () => {
+    const invoiceNo = '132'
     const issueDate = '09/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
     const dueDate = 'sdfsdfsdf'
@@ -129,7 +225,8 @@ describe('Create invoice: POST /api/v1/invoice', () => {
         companyId: myCompany1,
         clientId,
         issueDate,
-        dueDate
+        dueDate,
+        invoiceNo
       })
       .expect(400)
 
@@ -143,10 +240,23 @@ describe('Create invoice: POST /api/v1/invoice', () => {
     })
   })
 
-  it('should create an invoice and persist the data in the database when the user signs in and owns the company and provided correct date of issue, due date and clientId', async () => {
+  it('should create an invoice and persist the data in the database when the user signs in and owns the company and provided correct date of issue, due date, clientId and invoiceNo', async () => {
+    const invoiceNo1 = '132'
+    const invoiceNo2 = '133'
     const issueDate = '09/12/2019'
     const dueDate = '16/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
+
+    // create an invoice
+    const invoice1 = new Invoice()
+    invoice1.invoiceNo = invoiceNo1
+    invoice1.clientId = clientId
+    invoice1.issueDate = issueDate
+    invoice1.dueDate = dueDate
+    invoice1.companyId = myCompany1
+    await invoiceRepository.save(invoice1)
+
+    // create an invoice with a different invoice No
     await request(app)
       .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
@@ -154,20 +264,22 @@ describe('Create invoice: POST /api/v1/invoice', () => {
         companyId: myCompany1,
         clientId,
         issueDate,
-        dueDate
+        dueDate,
+        invoiceNo: invoiceNo2
       })
       .expect(201)
 
-    const invoice = await invoiceRepository.findOne({
-      companyId: myCompany1,
-      clientId
+    const invoice2 = await invoiceRepository.findOne({
+      invoiceNo: invoiceNo2
     })
-    expect(invoice!.companyId).toBe(myCompany1)
-    expect(invoice!.clientId).toBe(clientId)
-    expect(invoice!.id).not.toBe(null)
+    expect(invoice2!.companyId).toBe(myCompany1)
+    expect(invoice2!.clientId).toBe(clientId)
+    expect(invoice2!.issueDate).toBe(issueDate)
+    expect(invoice2!.dueDate).toBe(dueDate)
   })
 
   it('should be able to create invoice items when an invoice is created', async () => {
+    const invoiceNo = '132'
     const issueDate = '09/12/2019'
     const dueDate = '16/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
@@ -176,6 +288,7 @@ describe('Create invoice: POST /api/v1/invoice', () => {
       .post(`/api/v1/invoices`)
       .set('Cookie', [`jwt=${testUtils.signInWithCompanies([myCompany1, myCompany2])}`])
       .send({
+        invoiceNo,
         companyId: myCompany1,
         clientId,
         issueDate,

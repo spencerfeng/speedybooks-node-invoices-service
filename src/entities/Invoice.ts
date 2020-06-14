@@ -8,6 +8,9 @@ export class Invoice {
   id!: string
 
   @Column()
+  invoiceNo!: string
+
+  @Column()
   clientId!: string
 
   @Column()

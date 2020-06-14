@@ -8,6 +8,7 @@ export const createInvoice = async (req: Request, res: Response) => {
   try {
     const invoiceRepository = getConnection(process.env.NODE_ENV).getRepository(Invoice)
     const invoice = new Invoice()
+    invoice.invoiceNo = req.body.invoiceNo
     invoice.clientId = req.body.clientId
     invoice.issueDate = req.body.issueDate
     invoice.dueDate = req.body.dueDate

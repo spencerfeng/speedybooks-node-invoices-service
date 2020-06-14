@@ -1,8 +1,9 @@
 import moment from 'moment'
 import express, { Request, Response } from 'express'
-import { check, validationResult } from 'express-validator'
+import { check, validationResult, body } from 'express-validator'
 
 import { createInvoice } from './controller'
+import { findInvoiceByInvoiceNo } from './service'
 import { DATE_FORMAT } from '../../../../constants'
 import { ownCompany } from '../../../../middlewares/ownCompany'
 import { currentUser } from '../../../../middlewares/currentUser'
@@ -17,6 +18,12 @@ router.post(
   requireAuth,
   ownCompany,
   [
+    body('invoiceNo').exists().withMessage('Invoice No is required').bail().not().isEmpty().withMessage('Invoice No is required').custom(async (value) => {
+      const invoice = await findInvoiceByInvoiceNo(value)
+      if (invoice) {
+        throw new Error('This invoice No already exsits')
+      }
+    }),
     check('clientId').exists().withMessage('Client ID is required').bail().isUUID().withMessage('Client ID should be in the correct format'),
     check('issueDate').exists().withMessage('Date of issue is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Date of issue is not in the correct format'),
     check('dueDate').exists().withMessage('Due date is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Due date is not in the correct format')
