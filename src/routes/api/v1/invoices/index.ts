@@ -24,9 +24,9 @@ router.post(
         throw new Error('This invoice No already exsits')
       }
     }),
-    check('clientId').exists().withMessage('Client ID is required').bail().isUUID().withMessage('Client ID should be in the correct format'),
-    check('issueDate').exists().withMessage('Date of issue is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Date of issue is not in the correct format'),
-    check('dueDate').exists().withMessage('Due date is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Due date is not in the correct format')
+    body('clientId').exists().withMessage('Client ID is required').bail().isUUID().withMessage('Client ID should be in the correct format'),
+    body('issueDate').exists().withMessage('Date of issue is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Date of issue is not in the correct format'),
+    body('dueDate').exists().withMessage('Due date is required').bail().custom((value) => moment(value, DATE_FORMAT).isValid()).withMessage('Due date is not in the correct format')
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req)
