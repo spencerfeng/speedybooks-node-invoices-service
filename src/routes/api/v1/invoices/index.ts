@@ -3,12 +3,12 @@ import express, { Request, Response } from 'express'
 import { check, validationResult, body } from 'express-validator'
 
 import { createInvoice } from './controller'
-import { findInvoiceByInvoiceNo } from './service'
 import { DATE_FORMAT } from '../../../../constants'
 import { ownCompany } from '../../../../middlewares/ownCompany'
 import { currentUser } from '../../../../middlewares/currentUser'
 import { requireAuth } from '../../../../middlewares/requireAuth'
 import { RequestValidationError } from '../../../../errors/RequestValidationError'
+import { isInvoiceNoAlreadyTakenByCompany } from '../../../../helpers/isInvoiceNoAlreadyTakenByCompany'
 
 const router = express.Router()
 
@@ -18,9 +18,9 @@ router.post(
   requireAuth,
   ownCompany,
   [
-    body('invoiceNo').exists().withMessage('Invoice No is required').bail().not().isEmpty().withMessage('Invoice No is required').custom(async (value) => {
-      const invoice = await findInvoiceByInvoiceNo(value)
-      if (invoice) {
+    body('invoiceNo').exists().withMessage('Invoice No is required').bail().not().isEmpty().withMessage('Invoice No is required').custom(async (value, { req }) => {
+      const isDuplicateInvoiceNo = await isInvoiceNoAlreadyTakenByCompany(value, req.body.companyId)
+      if (isDuplicateInvoiceNo) {
         throw new Error('This invoice No already exsits')
       }
     }),

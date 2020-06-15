@@ -240,20 +240,31 @@ describe('Create invoice: POST /api/v1/invoice', () => {
     })
   })
 
-  it('should create an invoice and persist the data in the database when the user signs in and owns the company and provided correct date of issue, due date, clientId and invoiceNo', async () => {
+  it('should create an invoice and persist the data in the database when the user signs in and owns the company and provided correct date of issue, due date, clientId and invoiceNo, even if another company has an inovice with the same invoice No', async () => {
     const invoiceNo1 = '132'
     const invoiceNo2 = '133'
+    const invoiceNoForAnotherCompany = invoiceNo2
     const issueDate = '09/12/2019'
     const dueDate = '16/12/2019'
     const clientId = '8920d75f-3940-46e2-8e7c-b5273d6bc911'
+    const anotherCompanyId = '9fdb70f4-6dad-4e86-b0cd-e3c251bc70ee'
 
-    // create an invoice
+    // create an invoice for this company
     const invoice1 = new Invoice()
     invoice1.invoiceNo = invoiceNo1
     invoice1.clientId = clientId
     invoice1.issueDate = issueDate
     invoice1.dueDate = dueDate
     invoice1.companyId = myCompany1
+    await invoiceRepository.save(invoice1)
+
+    // create an invoice for another company
+    const invoiceForAnotherCompany = new Invoice()
+    invoiceForAnotherCompany.invoiceNo = invoiceNoForAnotherCompany
+    invoiceForAnotherCompany.clientId = clientId
+    invoiceForAnotherCompany.issueDate = issueDate
+    invoiceForAnotherCompany.dueDate = dueDate
+    invoiceForAnotherCompany.companyId = anotherCompanyId
     await invoiceRepository.save(invoice1)
 
     // create an invoice with a different invoice No
